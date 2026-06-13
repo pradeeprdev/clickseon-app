@@ -3,7 +3,7 @@ import type { LeadPayload, ChatMessage } from '../types';
 
 const instance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:5050',
-  timeout: 100000,
+  timeout: 1000000,
 });
 
 export const sendLead = (payload: LeadPayload) => {
