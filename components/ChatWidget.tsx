@@ -1,86 +1,180 @@
 "use client";
-import { useState, useRef, useEffect } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import { sendChat, getChatHistory } from '../services/api';
-import { useToast } from './ToastProvider';
+import { useState, useRef, useEffect } from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import { sendChat, getChatHistory } from "../services/api";
+import { useToast } from "./ToastProvider";
 
-export default function ChatWidget(){
+type Msg = {
+  from: "user" | "bot";
+  text: string;
+};
+
+export default function ChatWidget() {
   const [open, setOpen] = useState(false);
-  const [sessionId, setSessionId] = useLocalStorage<string | null>('chat_session', null);
-  const [messages, setMessages] = useState<{ from: 'user' | 'bot'; text: string }[]>([]);
-  const [input, setInput] = useState('');
+  const [sessionId, setSessionId] = useLocalStorage<string | null>(
+    "chat_session",
+    null
+  );
+  const [messages, setMessages] = useState<Msg[]>([]);
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scroller = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const { show } = useToast();
 
+  // auto scroll
   useEffect(() => {
-    if (scroller.current) scroller.current.scrollTop = scroller.current.scrollHeight;
+    if (scroller.current) {
+      scroller.current.scrollTop = scroller.current.scrollHeight;
+    }
   }, [messages, open]);
 
-  // Load chat history when we have a sessionId
+  // focus input on open
+  useEffect(() => {
+    if (open && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [open]);
+
+  // load history
   useEffect(() => {
     const loadHistory = async () => {
       if (!sessionId) return;
       try {
         const res = await getChatHistory(sessionId);
         const body = res.data?.data || res.data;
+
         if (Array.isArray(body?.history)) {
-          const mapped = body.history.map((h: any) => ({ from: 'user' as const, text: h.userMessage })).flat();
-          // interleave bot replies
-          const interleaved = body.history.reduce((acc: any[], h: any) => acc.concat({ from: 'user', text: h.userMessage }, { from: 'bot', text: h.botReply }), [] as any[]);
+          const interleaved = body.history.reduce(
+            (acc: Msg[], h: any) =>
+              acc.concat(
+                { from: "user", text: h.userMessage },
+                { from: "bot", text: h.botReply }
+              ),
+            []
+          );
+
           setMessages(interleaved);
         }
-      } catch (err) {
-        // ignore history load errors
-      }
+      } catch {}
     };
+
     loadHistory();
   }, [sessionId]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
+
     const text = input.trim();
-    setMessages((m) => [...m, { from: 'user', text }]);
-    setInput('');
+
+    setMessages((m) => [...m, { from: "user", text }]);
+    setInput("");
     setLoading(true);
+
     try {
       const payload = { sessionId: sessionId || undefined, message: text };
       const res = await sendChat(payload as any);
-      // backend responds with { success: true, data: { sessionId, userMessage, botReply } }
       const body = res.data?.data || res.data;
+
       if (body?.sessionId) setSessionId(body.sessionId);
-      setMessages((m) => [...m, { from: 'bot', text: body?.botReply || 'Sorry, no reply available.' }]);
+
+      setMessages((m) => [
+        ...m,
+        {
+          from: "bot",
+          text: body?.botReply || "Sorry, no reply available.",
+        },
+      ]);
     } catch (err: any) {
-      // Prefer server provided message when available
-      const serverMsg = err?.response?.data?.message || err?.message || 'Chat failed';
-      // show toast and append a bot-style message so user sees the error inline
-      show(serverMsg, 'error');
-      setMessages((m) => [...m, { from: 'bot', text: serverMsg }]);
-    } finally { setLoading(false); }
+      const msg =
+        err?.response?.data?.message || err?.message || "Chat failed";
+      show(msg, "error");
+
+      setMessages((m) => [...m, { from: "bot", text: msg }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
+
+      {/* Chat Window */}
       {open && (
-        <div className="w-80 md:w-96 h-96 bg-white dark:bg-slate-800 rounded-xl shadow-lg flex flex-col overflow-hidden border">
-          <div className="px-4 py-3 border-b">ClickGrow AI</div>
-          <div ref={scroller} className="flex-1 p-3 overflow-auto space-y-2">
-            {messages.map((m, i) => (
-              <div key={i} className={`max-w-[80%] ${m.from === 'user' ? 'ml-auto bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100'} rounded-md p-2`}>{m.text}</div>
-            ))}
-            {loading && <div className="text-sm text-slate-500">Thinking…</div>}
+        <div className="w-80 md:w-96 h-[500px] flex flex-col rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl overflow-hidden">
+
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+            <div className="font-semibold">ClickGrow AI</div>
+            <button onClick={() => setOpen(false)} className="text-white/80 hover:text-white">
+              ✕
+            </button>
           </div>
-          <div className="p-3 border-t">
-            <div className="flex gap-2">
-              <input value={input} onChange={(e) => setInput(e.target.value)} className="flex-1 p-2 border rounded" placeholder="Ask about website, SEO, AI" />
-              <button onClick={handleSend} disabled={loading} className="px-3 py-2 bg-indigo-600 text-white rounded">Send</button>
+
+          {/* Messages */}
+          <div
+            ref={scroller}
+            className="flex-1 p-3 space-y-2 overflow-auto scroll-smooth"
+          >
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={`flex ${
+                  m.from === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`px-3 py-2 max-w-[75%] text-sm rounded-2xl shadow-sm leading-relaxed ${
+                    m.from === "user"
+                      ? "bg-indigo-600 text-white rounded-br-sm"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-bl-sm"
+                  }`}
+                >
+                  {m.text}
+                </div>
+              </div>
+            ))}
+
+            {/* Typing indicator */}
+            {loading && (
+              <div className="flex items-center gap-1 text-slate-500 text-sm px-2">
+                <span className="animate-bounce">●</span>
+                <span className="animate-bounce delay-150">●</span>
+                <span className="animate-bounce delay-300">●</span>
+              </div>
+            )}
+          </div>
+
+          {/* Input */}
+          <div className="p-3 border-t bg-white dark:bg-slate-900">
+            <div className="flex items-center gap-2">
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder="Ask anything..."
+                className="flex-1 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+              />
+
+              <button
+                onClick={handleSend}
+                disabled={loading}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium disabled:opacity-50"
+              >
+                Send
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      <button onClick={() => setOpen((v) => !v)} className="mt-2 p-3 rounded-full bg-indigo-600 text-white shadow-lg">
-        {open ? '×' : 'AI'}
+      {/* Floating Button */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="h-14 w-14 flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xl hover:scale-105 transition"
+      >
+        {open ? "×" : "💬"}
       </button>
     </div>
   );
