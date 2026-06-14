@@ -1,36 +1,177 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ClickSeon App
 
-## Getting Started
+A modern web application built with Next.js, React, TypeScript, and Tailwind CSS. The project focuses on delivering a fast, responsive, and scalable user experience with modern development practices.
 
-First, run the development server:
+## Tech Stack
+
+### Frontend
+
+* Next.js 16
+* React 19
+* TypeScript
+* Tailwind CSS 4
+* Framer Motion
+* Lucide React Icons
+
+### State & Forms
+
+* React Hook Form
+
+### API Communication
+
+* Axios
+
+### Development Tools
+
+* ESLint
+* Next Themes
+
+---
+
+## Features
+
+* Responsive UI for desktop and mobile devices
+* Dark and Light theme support
+* Modern animations using Framer Motion
+* Form validation with React Hook Form
+* API integration using Axios
+* TypeScript support for better code quality
+* Optimized performance with Next.js App Router
+
+---
+
+## Project Structure
+
+```bash
+clickseon-app/
+├── app/
+│   ├── page.tsx
+│   ├── layout.tsx
+│   └── globals.css
+├── components/
+├── hooks/
+├── services/
+├── utils/
+├── public/
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+---
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/pradeeprdev/clickseon-app
+cd clickseon-app
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+---
+
+## Running the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Build for Production
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Start production server:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run start
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Linting
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run ESLint:
+
+```bash
+npm run lint
+```
+
+---
+
+## Environment Variables
+
+Create a `.env.local` file in the project root:
+
+```env
+NEXT_PUBLIC_API_URL=https://clickseon.vercel.app/
+```
+
+Add all required environment variables before running the application.
+
+---
+
+## Dependencies
+
+| Package         | Purpose          |
+| --------------- | ---------------- |
+| Next.js         | React Framework  |
+| React           | UI Library       |
+| TypeScript      | Type Safety      |
+| Tailwind CSS    | Styling          |
+| Axios           | HTTP Requests    |
+| Framer Motion   | Animations       |
+| React Hook Form | Form Handling    |
+| Lucide React    | Icons            |
+| Next Themes     | Theme Management |
+
+---
+
+## Deployment
+
+The application can be deployed on:
+
+* Vercel
+* Netlify
+* AWS
+* DigitalOcean
+* Any Node.js hosting provider
+
+### Deploy on Vercel
+
+```bash
+npm install -g vercel
+vercel
+```
+
+---
+
+## Author
+
+**Pradeep Rawat**
+
+* Portfolio: https://pradeepdev.com
+* GitHub: https://github.com/pradeeprdev
+* LinkedIn: https://linkedin.com/in/pradeeprawatdev
+
+---
+
+## License
+
+This project is licensed under the MIT License.
